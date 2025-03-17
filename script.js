@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const infoBox = document.getElementById('info-box');
     const formatHint = document.getElementById('formatHint');
     
+    // jQuery references
+    const $timezoneSelect = $(timezoneSelect);
+    
     // Default format
     const ISO_FORMAT = 'YYYY-MM-DD HH:mm:ss';
     
@@ -82,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Initialize timezone dropdown
+    // Initialize timezone dropdown with select2
     function initTimezoneDropdown() {
         // Clear any existing options
         timezoneSelect.innerHTML = '';
@@ -104,18 +107,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const option = document.createElement('option');
             option.value = timezone;
             
-            // Format the option text to include timezone, offset and current time
-            const nameParts = timezone.split('/');
-            const shortName = nameParts.length > 1 ? nameParts[1].replace(/_/g, ' ') : timezone;
-            
-            // Use tabs and spaces to create a table-like appearance with consistent columns
-            const spacedName = timezone.padEnd(28, ' ');
-            option.textContent = `${spacedName}${offsetText.padStart(4, ' ').padEnd(8, ' ')}${timeText}`;
-            
-            // Store data for updating
+            // Store data for searching and updating
             option.dataset.timezone = timezone;
             option.dataset.offset = offsetText;
             option.dataset.time = timeText;
+            
+            // Set plain text as the visible text (will be replaced by templateResult)
+            option.textContent = timezone;
             
             if (timezone === localTimezone) {
                 option.selected = true;
@@ -124,31 +122,92 @@ document.addEventListener('DOMContentLoaded', function() {
             timezoneSelect.appendChild(option);
         });
         
-        // Apply special styling to show bold and gray text in options
-        applySelectStyling();
+        // Initialize select2
+        $timezoneSelect.select2({
+            width: '100%',
+            templateResult: formatTimezoneItem,
+            templateSelection: formatTimezoneSelection,
+            matcher: customMatcher
+        });
+        
+        // Handle select2 events
+        $timezoneSelect.on('select2:select', function() {
+            if (timestampInput.value) {
+                timestampToDatetime(timestampInput.value);
+            } else if (datetimeInput.value) {
+                datetimeToTimestamp(datetimeInput.value);
+            }
+        });
+        
+        // Auto-focus search field when dropdown is opened
+        $timezoneSelect.on('select2:open', function(e) {
+            const id = e.target.id;
+            const target = document.querySelector(`[aria-controls=select2-${id}-results]`);
+            target.focus();
+        });
     }
     
-    // Apply CSS styling for select options
-    function applySelectStyling() {
-        // Add a class to our select for custom styling
-        timezoneSelect.classList.add('timezone-select');
-        
-        // Check if the stylesheet has already been added
-        if (!document.getElementById('timezone-option-styles')) {
-            // Create a style element for the option styling
-            const styleEl = document.createElement('style');
-            styleEl.id = 'timezone-option-styles';
-            
-            // Add CSS rules for styling options
-            styleEl.textContent = `
-                .timezone-select option {
-                    font-family: monospace;
-                }
-            `;
-            
-            // Add the style element to the head
-            document.head.appendChild(styleEl);
+    // Custom formatter for select2 dropdown items
+    function formatTimezoneItem(timezone) {
+        if (!timezone.id) {
+            return timezone.text;
         }
+        
+        const option = timezone.element;
+        const tzName = option.dataset.timezone;
+        const offset = option.dataset.offset;
+        const time = option.dataset.time;
+        
+        const $wrapper = $('<div class="timezone-item"></div>');
+        $wrapper.append(`<span class="timezone-name">${tzName}</span>`);
+        $wrapper.append(`<span class="timezone-offset">${offset}</span>`);
+        $wrapper.append(`<span class="timezone-time text-secondary small">${time}</span>`);
+        
+        return $wrapper;
+    }
+    
+    // Custom formatter for the selected item
+    function formatTimezoneSelection(timezone) {
+        if (!timezone.id) {
+            return timezone.text;
+        }
+        
+        const option = timezone.element;
+        const tzName = option.dataset.timezone;
+        const offset = option.dataset.offset;
+        
+        return `${tzName} (UTC${offset})`;
+    }
+    
+    // Custom matcher for search functionality
+    function customMatcher(params, data) {
+        // If there are no search terms, return all of the data
+        if ($.trim(params.term) === '') {
+            return data;
+        }
+        
+        // Skip if there is no 'id' property
+        if (typeof data.id === 'undefined') {
+            return null;
+        }
+        
+        // Get the timezone data from the option
+        const tzName = data.element.dataset.timezone;
+        const offset = data.element.dataset.offset;
+        const time = data.element.dataset.time;
+        
+        // Search term
+        const searchTerm = params.term.toLowerCase();
+        
+        // Check if the timezone name, offset, or time contains the search term
+        if (tzName.toLowerCase().indexOf(searchTerm) > -1 ||
+            offset.indexOf(searchTerm) > -1 ||
+            time.indexOf(searchTerm) > -1) {
+            return data;
+        }
+        
+        // Return `null` if the term should not be displayed
+        return null;
     }
     
     // Update all timezone options with current time
@@ -162,12 +221,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update the data attributes
                 option.dataset.offset = offsetText;
                 option.dataset.time = timeText;
-                
-                // Update the option text with consistent spacing
-                const spacedName = timezone.padEnd(28, ' ');
-                option.textContent = `${spacedName}${offsetText.padStart(4, ' ').padEnd(8, ' ')}${timeText}`;
             }
         });
+        
+        // If the timezone dropdown is open, force a redraw
+        // if ($timezoneSelect.data('select2') && $timezoneSelect.data('select2').isOpen()) {
+        //     $timezoneSelect.select2('close');
+        //     $timezoneSelect.select2('open');
+        // }
+        
+        // Update the selected option display
+        $timezoneSelect.trigger('change.select2');
     }
     
     // Update info box
@@ -215,7 +279,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Convert datetime to timestamp (used for programmatic updates, not direct user input)
     function datetimeToTimestamp(datetimeStr) {
-        if (!datetimeStr) return;
+        console.log(datetimeStr);
+        if (!datetimeStr) {
+            updateInfoBox('Invalid timestamp format', 'warning');
+            return;
+        }
         
         // If the update is user-initiated typing, use our specialized handler
         if (isUpdatingDateTime) {
@@ -388,6 +456,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const timestamp = datetime.unix();
                     timestampInput.value = timestamp;
                     updateInfoBox(`Converted datetime to timestamp ${timestamp} (UTC)`, 'success');
+                } else {
+                    updateInfoBox(`Can't parse date ${datetimeStr}`, 'warning');
                 }
             } else {
                 // Try parsing as a native Date
@@ -397,20 +467,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     const timestamp = datetime.unix();
                     timestampInput.value = timestamp;
                     updateInfoBox(`Converted datetime to timestamp ${timestamp} (UTC)`, 'success');
+                } else {
+                    updateInfoBox(`Can't parse date ${datetimeStr}`, 'warning');
                 }
             }
         } catch (error) {
             // Silently fail to maintain smooth typing experience
+            updateInfoBox(`Can't parse date ${datetimeStr}`, 'warning');
         }
     }
     
-    timezoneSelect.addEventListener('change', function() {
-        if (timestampInput.value) {
-            timestampToDatetime(timestampInput.value);
-        } else if (datetimeInput.value) {
-            datetimeToTimestamp(datetimeInput.value);
-        }
-    });
+    // No need for the native change event listener as it's handled by select2:select event
     
     // Real-time clock update
     function startClockUpdate() {
@@ -434,4 +501,5 @@ document.addEventListener('DOMContentLoaded', function() {
         timestampInput.value = timestamp;
         timestampToDatetime(timestamp);
     });
+    $( "#current-time-btn" ).trigger( "click" );
 });

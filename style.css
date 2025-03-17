@@ -37,6 +37,57 @@ select#timezone {
     width: 100%;
 }
 
+/* Select2 custom styles */
+.select2-container--default .select2-selection--single {
+    height: 38px;
+    padding: 5px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+.select2-dropdown {
+    border: 1px solid #ced4da;
+}
+
+.select2-results__option {
+    font-family: monospace;
+    padding: 6px;
+    white-space: pre;
+}
+
+.timezone-item {
+    display: flex;
+    width: 100%;
+}
+
+.timezone-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timezone-offset {
+    font-weight: bold;
+    margin: 0 10px;
+}
+
+.timezone-time {
+    padding-top: 2px;
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable .timezone-offset {
+    font-weight: bold;
+    color: inherit;
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable .timezone-time {
+    color: inherit;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;
