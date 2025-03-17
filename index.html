@@ -14,23 +14,30 @@
                 <h2 class="text-center">Time Format Converter</h2>
             </div>
             <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-12 text-center">
+                        <button class="btn btn-outline-primary" id="current-time-btn">Use Current Time</button>
+                    </div>
+                </div>
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group mt-4">
                             <label for="timestamp">Unix Timestamp (UTC, seconds)</label>
                             <input type="number" class="form-control" id="timestamp" placeholder="Enter timestamp">
                             <small class="form-text text-muted">Example: 1609459200</small>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
-                            <div class="row">
-                                <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mt-4">
                                     <label for="datetime">Date and Time</label>
                                     <input type="text" class="form-control" id="datetime" placeholder="YYYY-MM-DD HH:MM:SS">
                                     <small class="form-text text-muted" id="formatHint">ISO format: 2026-12-30 12:30:25</small>
                                 </div>
-                                <div class="col-md-4">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mt-4">
                                     <label for="timezone">Timezone</label>
                                     <select class="form-select" id="timezone"></select>
                                     <small class="d-none">Timezone information appears below</small>

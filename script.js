@@ -428,17 +428,6 @@ document.addEventListener('DOMContentLoaded', function() {
     startClockUpdate();
     updateInfoBox('Enter a timestamp or a date to begin conversion');
     
-    // Add a current time button to help users
-    const cardBody = document.querySelector('.card-body');
-    const buttonRow = document.createElement('div');
-    buttonRow.className = 'row mb-3';
-    buttonRow.innerHTML = `
-        <div class="col-md-12 text-center">
-            <button class="btn btn-outline-primary" id="current-time-btn">Use Current Time</button>
-        </div>
-    `;
-    cardBody.insertBefore(buttonRow, cardBody.firstChild);
-    
     document.getElementById('current-time-btn').addEventListener('click', function() {
         const now = dayjs();
         const timestamp = now.unix();
