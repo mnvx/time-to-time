@@ -52,17 +52,110 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get browser's timezone
     const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
+    // Calculate timezone offset in hours
+    function getTimezoneOffset(timezone) {
+        const now = new Date();
+        const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+        const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+        const offset = (tzDate - utcDate) / (1000 * 60 * 60);
+        return offset;
+    }
+    
+    // Format timezone option text with offset and current time
+    function formatTimezoneOption(timezone) {
+        const offset = getTimezoneOffset(timezone);
+        const sign = offset >= 0 ? '+' : '';
+        const offsetText = `${sign}${offset}`;
+        
+        // Current time in the timezone
+        const timeText = new Date().toLocaleTimeString('en-US', { 
+            timeZone: timezone,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+        
+        return { 
+            timezone, 
+            offsetText, 
+            timeText 
+        };
+    }
+    
     // Initialize timezone dropdown
     function initTimezoneDropdown() {
-        timezones.forEach(timezone => {
+        // Clear any existing options
+        timezoneSelect.innerHTML = '';
+        
+        // Format for display
+        const formattedTimezones = timezones.map(timezone => {
+            return formatTimezoneOption(timezone);
+        });
+        
+        // Sort by offset
+        formattedTimezones.sort((a, b) => {
+            const offsetA = parseFloat(a.offsetText);
+            const offsetB = parseFloat(b.offsetText);
+            return offsetA - offsetB;
+        });
+        
+        // Create and append options
+        formattedTimezones.forEach(({ timezone, offsetText, timeText }) => {
             const option = document.createElement('option');
             option.value = timezone;
             option.textContent = timezone;
+            option.dataset.offset = offsetText;
+            option.dataset.time = timeText;
+            
             if (timezone === localTimezone) {
                 option.selected = true;
             }
+            
             timezoneSelect.appendChild(option);
         });
+        
+        // Update the display of the selected option
+        updateTimezoneDisplay();
+    }
+    
+    // Update the display of the selected timezone
+    function updateTimezoneDisplay() {
+        // Get the selected option
+        const selectedOption = timezoneSelect.options[timezoneSelect.selectedIndex];
+        
+        if (!selectedOption) return;
+        
+        const timezone = selectedOption.value;
+        
+        // Format the timezone info
+        const { timezone: tz, offsetText, timeText } = formatTimezoneOption(timezone);
+        
+        // Update the data attributes
+        selectedOption.dataset.offset = offsetText;
+        selectedOption.dataset.time = timeText;
+        
+        // Clear existing custom display
+        const existingDisplay = document.getElementById('custom-timezone-display');
+        if (existingDisplay) {
+            existingDisplay.remove();
+        }
+        
+        // Create custom display
+        const displayDiv = document.createElement('div');
+        displayDiv.id = 'custom-timezone-display';
+        displayDiv.className = 'timezone-display mt-2';
+        displayDiv.innerHTML = `
+            <table class="timezone-table">
+                <tr>
+                    <td class="timezone-name">${tz}</td>
+                    <td class="timezone-offset"><strong>${offsetText}</strong></td>
+                    <td class="timezone-time text-muted">${timeText}</td>
+                </tr>
+            </table>
+        `;
+        
+        // Insert after the select element
+        timezoneSelect.parentNode.appendChild(displayDiv);
     }
     
     // Update info box
@@ -171,6 +264,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     timezoneSelect.addEventListener('change', function() {
+        // Update the timezone display when selection changes
+        updateTimezoneDisplay();
+        
         if (timestampInput.value) {
             timestampToDatetime(timestampInput.value);
         } else if (datetimeInput.value) {
@@ -178,8 +274,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Real-time clock update
+    function startClockUpdate() {
+        // Update initially
+        updateTimezoneDisplay();
+        
+        // Update every second
+        setInterval(function() {
+            updateTimezoneDisplay();
+        }, 1000);
+    }
+    
     // Initialize
     initTimezoneDropdown();
+    startClockUpdate();
     updateInfoBox('Enter a timestamp or a date to begin conversion');
     
     // Add a current time button to help users

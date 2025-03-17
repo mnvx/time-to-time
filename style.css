@@ -22,6 +22,38 @@ body {
     transition: all 0.3s ease;
 }
 
+/* Timezone display styles */
+.timezone-display {
+    margin-top: 8px;
+    font-size: 0.9rem;
+}
+
+.timezone-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.timezone-name {
+    width: 65%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.timezone-offset {
+    width: 15%;
+    text-align: center;
+}
+
+.timezone-time {
+    width: 20%;
+    text-align: right;
+}
+
+.timezone-offset strong {
+    font-weight: 700;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -29,5 +61,17 @@ body {
     
     .card-body {
         padding: 15px;
+    }
+    
+    .timezone-name {
+        width: 55%;
+    }
+    
+    .timezone-offset {
+        width: 20%;
+    }
+    
+    .timezone-time {
+        width: 25%;
     }
 }
