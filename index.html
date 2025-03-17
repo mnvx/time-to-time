@@ -23,15 +23,19 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label for="datetime">Date and Time</label>
-                            <input type="text" class="form-control" id="datetime" placeholder="YYYY-MM-DD HH:MM:SS">
-                            <small class="form-text text-muted" id="formatHint">ISO format: 2026-12-30 12:30:25</small>
-                        </div>
                         <div class="form-group">
-                            <label for="timezone">Timezone</label>
-                            <select class="form-select" id="timezone"></select>
-                            <small class="form-text text-muted">Default is your local timezone</small>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <label for="datetime">Date and Time</label>
+                                    <input type="text" class="form-control" id="datetime" placeholder="YYYY-MM-DD HH:MM:SS">
+                                    <small class="form-text text-muted" id="formatHint">ISO format: 2026-12-30 12:30:25</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="timezone">Timezone</label>
+                                    <select class="form-select" id="timezone"></select>
+                                    <small class="form-text text-muted">Local timezone</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -44,7 +48,7 @@
                 </div>
             </div>
             <div class="card-footer text-muted text-center">
-                <p>Uses <a href="https://day.js.org/" target="_blank">Day.js</a> for date-time handling</p>
+                <p>Time to Time Converter</p>
             </div>
         </div>
     </div>
