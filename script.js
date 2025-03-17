@@ -213,9 +213,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
     
-    // Convert datetime to timestamp
+    // Convert datetime to timestamp (used for programmatic updates, not direct user input)
     function datetimeToTimestamp(datetimeStr) {
         if (!datetimeStr) return;
+        
+        // If the update is user-initiated typing, use our specialized handler
+        if (isUpdatingDateTime) {
+            calculateTimestampFromDatetime(datetimeStr);
+            return;
+        }
         
         try {
             const selectedTimezone = timezoneSelect.value;
@@ -247,8 +253,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const timestamp = datetime.unix();
             timestampInput.value = timestamp;
             
-            // Format the datetime input in ISO format
-            datetimeInput.value = datetime.format(ISO_FORMAT);
+            // Only format the datetime input for programmatic changes (not user typing)
+            // For example, when changing timezone or clicking the "Use Current Time" button
+            if (!isUpdatingDateTime) {
+                // Save cursor position
+                const cursorPos = datetimeInput.selectionStart;
+                
+                // Format the datetime input in ISO format
+                datetimeInput.value = datetime.format(ISO_FORMAT);
+                
+                // Try to restore cursor position if appropriate
+                if (document.activeElement === datetimeInput) {
+                    const newPos = Math.min(cursorPos, datetimeInput.value.length);
+                    datetimeInput.setSelectionRange(newPos, newPos);
+                }
+            }
             
             updateInfoBox(`Converted datetime to timestamp ${timestamp} (UTC)`, 'success');
         } catch (error) {
@@ -266,14 +285,105 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    datetimeInput.addEventListener('input', function() {
+    // Flag to track if we're already processing an input event
+    let isUpdatingDateTime = false;
+
+    // Handle keydown for overwrite mode
+    datetimeInput.addEventListener('keydown', function(e) {
+        // Only handle character keys (not special keys, arrows, backspace, etc.)
+        if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            const cursorPos = this.selectionStart;
+            const selectionEnd = this.selectionEnd;
+            
+            // If there's no selection range and cursor isn't at the end
+            if (cursorPos === selectionEnd && cursorPos < this.value.length) {
+                // Prevent default behavior (which is insertion)
+                e.preventDefault();
+                
+                // Create new value with the character replacing the one at cursor position
+                const newValue = this.value.substring(0, cursorPos) + 
+                                e.key + 
+                                this.value.substring(cursorPos + 1);
+                
+                // Update value
+                this.value = newValue;
+                
+                // Move cursor forward
+                this.setSelectionRange(cursorPos + 1, cursorPos + 1);
+                
+                // Calculate timestamp manually
+                if (newValue) {
+                    calculateTimestampFromDatetime(newValue);
+                } else {
+                    timestampInput.value = '';
+                    updateInfoBox('Enter a timestamp or a date to begin conversion');
+                }
+            }
+        }
+    });
+    
+    // For paste operations and normal input handling
+    datetimeInput.addEventListener('input', function(e) {
+        // Avoid processing if the keydown handler already took care of it
+        if (isUpdatingDateTime) return;
+        
         if (this.value) {
-            datetimeToTimestamp(this.value);
+            // Save cursor position
+            const cursorPos = this.selectionStart;
+            
+            // Set flag to prevent recursive updates
+            isUpdatingDateTime = true;
+            
+            // Use a separate function to calculate timestamp
+            calculateTimestampFromDatetime(this.value);
+            
+            // Restore cursor position
+            setTimeout(() => {
+                // Make sure we restore to original position or end of string if shortened
+                const newPos = Math.min(cursorPos, this.value.length);
+                this.setSelectionRange(newPos, newPos);
+                isUpdatingDateTime = false;
+            }, 0);
         } else {
             timestampInput.value = '';
             updateInfoBox('Enter a timestamp or a date to begin conversion');
+            isUpdatingDateTime = false;
         }
     });
+    
+    // Function to calculate timestamp without modifying the datetime input
+    function calculateTimestampFromDatetime(datetimeStr) {
+        try {
+            const selectedTimezone = timezoneSelect.value;
+            let datetime;
+            let format;
+            
+            // Try to auto-detect format
+            format = detectFormat(datetimeStr);
+            
+            if (format) {
+                datetime = dayjs.tz(datetimeStr, format, selectedTimezone);
+                
+                if (datetime.isValid()) {
+                    // Only update the timestamp, not the datetime field
+                    const timestamp = datetime.unix();
+                    timestampInput.value = timestamp;
+                    updateInfoBox(`Converted datetime to timestamp ${timestamp} (UTC)`, 'success');
+                }
+            } else {
+                // Try parsing as a native Date
+                const nativeDate = new Date(datetimeStr);
+                if (!isNaN(nativeDate.getTime())) {
+                    datetime = dayjs.tz(nativeDate, selectedTimezone);
+                    const timestamp = datetime.unix();
+                    timestampInput.value = timestamp;
+                    updateInfoBox(`Converted datetime to timestamp ${timestamp} (UTC)`, 'success');
+                }
+            }
+        } catch (error) {
+            // Silently fail to maintain smooth typing experience
+        }
+    }
     
     timezoneSelect.addEventListener('change', function() {
         if (timestampInput.value) {
