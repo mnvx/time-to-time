@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time to Time Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="text-center">Time Format Converter</h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="timestamp">Unix Timestamp (UTC, seconds)</label>
+                            <input type="number" class="form-control" id="timestamp" placeholder="Enter timestamp">
+                            <small class="form-text text-muted">Example: 1609459200</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="datetime">Date and Time</label>
+                            <input type="text" class="form-control" id="datetime" placeholder="YYYY-MM-DD HH:MM:SS">
+                            <small class="form-text text-muted" id="formatHint">ISO format: 2026-12-30 12:30:25</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="timezone">Timezone</label>
+                            <select class="form-select" id="timezone"></select>
+                            <small class="form-text text-muted">Default is your local timezone</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-info" id="info-box" role="alert">
+                            Enter a timestamp or a date to begin conversion
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-muted text-center">
+                <p>Uses <a href="https://day.js.org/" target="_blank">Day.js</a> for date-time handling</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/timezone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/plugin/customParseFormat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
