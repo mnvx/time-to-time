@@ -22,36 +22,19 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Timezone display styles */
-.timezone-display {
-    margin-top: 8px;
-    font-size: 0.9rem;
-}
-
-.timezone-table {
-    width: 100%;
-    table-layout: fixed;
-}
-
-.timezone-name {
-    width: 65%;
+/* Timezone select styles */
+.timezone-select {
+    font-family: monospace;
+    max-width: 100%;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-.timezone-offset {
-    width: 15%;
-    text-align: center;
-}
-
-.timezone-time {
-    width: 20%;
-    text-align: right;
-}
-
-.timezone-offset strong {
-    font-weight: 700;
+/* Ensure the select is wide enough */
+select#timezone {
+    min-width: 100%;
+    width: 100%;
 }
 
 @media (max-width: 768px) {

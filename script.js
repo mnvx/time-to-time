@@ -103,7 +103,17 @@ document.addEventListener('DOMContentLoaded', function() {
         formattedTimezones.forEach(({ timezone, offsetText, timeText }) => {
             const option = document.createElement('option');
             option.value = timezone;
-            option.textContent = timezone;
+            
+            // Format the option text to include timezone, offset and current time
+            const nameParts = timezone.split('/');
+            const shortName = nameParts.length > 1 ? nameParts[1].replace(/_/g, ' ') : timezone;
+            
+            // Use tabs and spaces to create a table-like appearance with consistent columns
+            const spacedName = timezone.padEnd(28, ' ');
+            option.textContent = `${spacedName}${offsetText.padStart(4, ' ').padEnd(8, ' ')}${timeText}`;
+            
+            // Store data for updating
+            option.dataset.timezone = timezone;
             option.dataset.offset = offsetText;
             option.dataset.time = timeText;
             
@@ -114,48 +124,50 @@ document.addEventListener('DOMContentLoaded', function() {
             timezoneSelect.appendChild(option);
         });
         
-        // Update the display of the selected option
-        updateTimezoneDisplay();
+        // Apply special styling to show bold and gray text in options
+        applySelectStyling();
     }
     
-    // Update the display of the selected timezone
-    function updateTimezoneDisplay() {
-        // Get the selected option
-        const selectedOption = timezoneSelect.options[timezoneSelect.selectedIndex];
+    // Apply CSS styling for select options
+    function applySelectStyling() {
+        // Add a class to our select for custom styling
+        timezoneSelect.classList.add('timezone-select');
         
-        if (!selectedOption) return;
-        
-        const timezone = selectedOption.value;
-        
-        // Format the timezone info
-        const { timezone: tz, offsetText, timeText } = formatTimezoneOption(timezone);
-        
-        // Update the data attributes
-        selectedOption.dataset.offset = offsetText;
-        selectedOption.dataset.time = timeText;
-        
-        // Clear existing custom display
-        const existingDisplay = document.getElementById('custom-timezone-display');
-        if (existingDisplay) {
-            existingDisplay.remove();
+        // Check if the stylesheet has already been added
+        if (!document.getElementById('timezone-option-styles')) {
+            // Create a style element for the option styling
+            const styleEl = document.createElement('style');
+            styleEl.id = 'timezone-option-styles';
+            
+            // Add CSS rules for styling options
+            styleEl.textContent = `
+                .timezone-select option {
+                    font-family: monospace;
+                }
+            `;
+            
+            // Add the style element to the head
+            document.head.appendChild(styleEl);
         }
-        
-        // Create custom display
-        const displayDiv = document.createElement('div');
-        displayDiv.id = 'custom-timezone-display';
-        displayDiv.className = 'timezone-display mt-2';
-        displayDiv.innerHTML = `
-            <table class="timezone-table">
-                <tr>
-                    <td class="timezone-name">${tz}</td>
-                    <td class="timezone-offset"><strong>${offsetText}</strong></td>
-                    <td class="timezone-time text-muted">${timeText}</td>
-                </tr>
-            </table>
-        `;
-        
-        // Insert after the select element
-        timezoneSelect.parentNode.appendChild(displayDiv);
+    }
+    
+    // Update all timezone options with current time
+    function updateTimezoneOptions() {
+        // Update each option
+        Array.from(timezoneSelect.options).forEach(option => {
+            const timezone = option.dataset.timezone;
+            if (timezone) {
+                const { offsetText, timeText } = formatTimezoneOption(timezone);
+                
+                // Update the data attributes
+                option.dataset.offset = offsetText;
+                option.dataset.time = timeText;
+                
+                // Update the option text with consistent spacing
+                const spacedName = timezone.padEnd(28, ' ');
+                option.textContent = `${spacedName}${offsetText.padStart(4, ' ').padEnd(8, ' ')}${timeText}`;
+            }
+        });
     }
     
     // Update info box
@@ -264,9 +276,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     timezoneSelect.addEventListener('change', function() {
-        // Update the timezone display when selection changes
-        updateTimezoneDisplay();
-        
         if (timestampInput.value) {
             timestampToDatetime(timestampInput.value);
         } else if (datetimeInput.value) {
@@ -277,11 +286,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Real-time clock update
     function startClockUpdate() {
         // Update initially
-        updateTimezoneDisplay();
+        updateTimezoneOptions();
         
         // Update every second
         setInterval(function() {
-            updateTimezoneDisplay();
+            updateTimezoneOptions();
         }, 1000);
     }
     
