@@ -308,8 +308,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update value
                 this.value = newValue;
                 
-                // Move cursor forward
-                this.setSelectionRange(cursorPos + 1, cursorPos + 1);
+                // Move cursor forward, then skip any non-digit separators
+                let newCursorPos = cursorPos + 1;
+                
+                // Skip ahead past any non-digit characters (like "-", ":", " ")
+                while (
+                    newCursorPos < this.value.length && 
+                    !/\d/.test(this.value.charAt(newCursorPos))
+                ) {
+                    newCursorPos++;
+                }
+                
+                this.setSelectionRange(newCursorPos, newCursorPos);
                 
                 // Calculate timestamp manually
                 if (newValue) {
@@ -339,8 +349,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Restore cursor position
             setTimeout(() => {
-                // Make sure we restore to original position or end of string if shortened
-                const newPos = Math.min(cursorPos, this.value.length);
+                // Get new cursor position, accounting for shortened text if needed
+                let newPos = Math.min(cursorPos, this.value.length);
+                
+                // Skip ahead past any non-digit characters
+                while (
+                    newPos < this.value.length && 
+                    !/\d/.test(this.value.charAt(newPos))
+                ) {
+                    newPos++;
+                }
+                
                 this.setSelectionRange(newPos, newPos);
                 isUpdatingDateTime = false;
             }, 0);
