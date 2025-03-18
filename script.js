@@ -154,6 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
             width: '100%',
             templateResult: formatTimezoneItem,
             templateSelection: formatTimezoneSelection,
+            dropdownCssClass: 'select2-dropdown-large',
+            selectionCssClass: 'select2-selection-large',
             matcher: customMatcher
         });
         
