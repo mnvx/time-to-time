@@ -10,6 +10,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const timezoneSelect = document.getElementById('timezone');
     const infoBox = document.getElementById('info-box');
     const formatHint = document.getElementById('formatHint');
+    const themeToggle = document.getElementById('theme-toggle');
+    const currentYearSpan = document.getElementById('current-year');
+    
+    // Set current year in footer
+    currentYearSpan.textContent = new Date().getFullYear();
+    
+    // Theme management
+    function setTheme(isDark) {
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('dark-theme', isDark ? 'true' : 'false');
+        themeToggle.checked = isDark;
+    }
+    
+    // Check for saved theme preference or respect OS preference
+    const savedTheme = localStorage.getItem('dark-theme');
+    if (savedTheme !== null) {
+        setTheme(savedTheme === 'true');
+    } else {
+        // Use OS preference as default
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDarkScheme);
+    }
+    
+    // Add theme toggle event listener
+    themeToggle.addEventListener('change', function() {
+        setTheme(this.checked);
+    });
     
     // jQuery references
     const $timezoneSelect = $(timezoneSelect);
@@ -236,7 +263,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update info box
     function updateInfoBox(message, type = 'info') {
-        infoBox.textContent = message;
+        // Add icon based on message type
+        let icon = '';
+        switch(type) {
+            case 'success':
+                icon = '<i class="bi bi-check-circle me-2"></i>';
+                break;
+            case 'warning':
+                icon = '<i class="bi bi-exclamation-triangle me-2"></i>';
+                break;
+            case 'danger':
+                icon = '<i class="bi bi-x-circle me-2"></i>';
+                break;
+            default:
+                icon = '<i class="bi bi-info-circle me-2"></i>';
+        }
+        infoBox.innerHTML = icon + message;
         infoBox.className = `alert alert-${type}`;
     }
     
