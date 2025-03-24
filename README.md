@@ -1,5 +1,9 @@
 # Time to Time Converter
 
+**Deprecated!!! Please follow the actual version: https://github.com/isitup/time-to-time**
+
+<hr/>
+
 A simple web application for converting between Unix timestamps and human-readable date-time formats.
 
 ![](assets/header.jpg)
