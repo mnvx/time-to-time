@@ -9,13 +9,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const datetimeInput = document.getElementById('datetime');
     const timezoneSelect = document.getElementById('timezone');
     const infoBox = document.getElementById('info-box');
-    const formatHint = document.getElementById('formatHint');
     const themeToggle = document.getElementById('theme-toggle');
     const currentYearSpan = document.getElementById('current-year');
     
     // Set current year in footer
     currentYearSpan.textContent = new Date().getFullYear();
-    
+
+    // Create date picker
+    const calendula = new Calendula(document.getElementById('datetime'), {
+        showTime: true,
+        showSeconds: true,
+        minuteStep: 1,
+        initialDate: new Date(),
+        dateFormat: 'YYYY-MM-DD HH:mm:SS',
+        onChange: function(selectedDate) {
+            console.log('Selected date changed:', selectedDate);
+            const newValue = datetimeInput.value;
+            if (newValue) {
+                calculateTimestampFromDatetime(newValue);
+            } else {
+                timestampInput.value = '';
+                updateInfoBox('Enter a timestamp or a date to begin conversion');
+            }
+        }
+    });
+
     // Theme management
     function setTheme(isDark) {
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
@@ -304,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            datetimeInput.value = datetime.format(ISO_FORMAT);
+            calendula.setDate(datetime.toDate());
             updateInfoBox(`Converted timestamp ${timestampNum} to datetime in ${selectedTimezone} timezone`, 'success');
         } catch (error) {
             updateInfoBox(`Error: ${error.message}`, 'danger');
@@ -400,49 +418,62 @@ document.addEventListener('DOMContentLoaded', function() {
     // Flag to track if we're already processing an input event
     let isUpdatingDateTime = false;
 
-    // Handle keydown for overwrite mode
-    datetimeInput.addEventListener('keydown', function(e) {
-        // Only handle character keys (not special keys, arrows, backspace, etc.)
-        if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            const cursorPos = this.selectionStart;
-            const selectionEnd = this.selectionEnd;
-            
-            // If there's no selection range and cursor isn't at the end
-            if (cursorPos === selectionEnd && cursorPos < this.value.length) {
-                // Prevent default behavior (which is insertion)
-                e.preventDefault();
-                
-                // Create new value with the character replacing the one at cursor position
-                const newValue = this.value.substring(0, cursorPos) + 
-                                e.key + 
-                                this.value.substring(cursorPos + 1);
-                
-                // Update value
-                this.value = newValue;
-                
-                // Move cursor forward, then skip any non-digit separators
-                let newCursorPos = cursorPos + 1;
-                
-                // Skip ahead past any non-digit characters (like "-", ":", " ")
-                while (
-                    newCursorPos < this.value.length && 
-                    !/\d/.test(this.value.charAt(newCursorPos))
-                ) {
-                    newCursorPos++;
-                }
-                
-                this.setSelectionRange(newCursorPos, newCursorPos);
-                
-                // Calculate timestamp manually
-                if (newValue) {
-                    calculateTimestampFromDatetime(newValue);
-                } else {
-                    timestampInput.value = '';
-                    updateInfoBox('Enter a timestamp or a date to begin conversion');
-                }
-            }
+    // console.log(datetimeInput);
+    $('body #datetime').on('input', function() {
+        console.log(1);
+        const newValue = datetimeInput.value;
+        if (newValue) {
+            calculateTimestampFromDatetime(newValue);
+        } else {
+            timestampInput.value = '';
+            updateInfoBox('Enter a timestamp or a date to begin conversion');
         }
     });
+
+    // Handle keydown for overwrite mode
+    // datetimeInput.addEventListener('keydown', function(e) {
+    //     // Only handle character keys (not special keys, arrows, backspace, etc.)
+    //     if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    //         const cursorPos = this.selectionStart;
+    //         const selectionEnd = this.selectionEnd;
+    //         console.log(cursorPos);
+    //
+    //         // If there's no selection range and cursor isn't at the end
+    //         if (cursorPos === selectionEnd && cursorPos < this.value.length) {
+    //             // Prevent default behavior (which is insertion)
+    //             e.preventDefault();
+    //
+    //             // Create new value with the character replacing the one at cursor position
+    //             const newValue = this.value.substring(0, cursorPos) +
+    //                             e.key +
+    //                             this.value.substring(cursorPos + 1);
+    //
+    //             // Update value
+    //             this.value = newValue;
+    //
+    //             // Move cursor forward, then skip any non-digit separators
+    //             let newCursorPos = cursorPos + 1;
+    //
+    //             // Skip ahead past any non-digit characters (like "-", ":", " ")
+    //             while (
+    //                 newCursorPos < this.value.length &&
+    //                 !/\d/.test(this.value.charAt(newCursorPos))
+    //             ) {
+    //                 newCursorPos++;
+    //             }
+    //
+    //             this.setSelectionRange(newCursorPos, newCursorPos);
+    //
+    //             // Calculate timestamp manually
+    //             if (newValue) {
+    //                 calculateTimestampFromDatetime(newValue);
+    //             } else {
+    //                 timestampInput.value = '';
+    //                 updateInfoBox('Enter a timestamp or a date to begin conversion');
+    //             }
+    //         }
+    //     }
+    // });
     
     // For paste operations and normal input handling
     datetimeInput.addEventListener('input', function(e) {

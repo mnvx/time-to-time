@@ -13,7 +13,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://isitup.github.io/calendula/styles.css">
     <link rel="stylesheet" href="style.css">
+    <script src="https://isitup.github.io/calendula/translations.js"></script>
+    <script src="https://isitup.github.io/calendula/calendar.js"></script>
 </head>
 <body>
     <div class="container mt-4">
@@ -42,7 +45,7 @@
                     </div>
                 </div>
                 <div class="row mb-4">
-                    <div class="col-md-4">
+                    <div class="col-12 col-lg-4">
                         <div class="form-group mt-3">
                             <label for="timestamp">
                                 <i class="bi bi-hash me-1"></i>Unix Timestamp <small>(UTC, seconds)</small>
@@ -53,21 +56,21 @@
                     </div>
                     <div class="col-md-8">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-12 col-lg-6">
                                 <div class="form-group mt-3">
                                     <label for="datetime">
                                         <i class="bi bi-calendar-date me-1"></i>Date and Time
                                     </label>
                                     <input type="text" class="form-control fs-2" id="datetime" placeholder="YYYY-MM-DD HH:MM:SS">
-                                    <small class="form-text text-muted" id="formatHint">ISO format: 2026-12-30 12:30:25</small>
+                                    <small class="form-text text-muted">ISO format: 2026-12-30 12:30:25</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-12 col-lg-6">
                                 <div class="form-group mt-3">
                                     <label for="timezone">
                                         <i class="bi bi-globe me-1"></i>Timezone
                                     </label>
-                                    <select class="form-select" id="timezone"></select>
+                                    <select class="form-select d-none" id="timezone"></select>
                                     <small class="form-text text-muted d-none">Timezone information appears below</small>
                                 </div>
                             </div>
@@ -85,7 +88,11 @@
         </div>
         
         <footer class="footer">
-            <p>Time to Time Converter | <span id="current-year"></span></p>
+            <p>Time to Time Converter &bullet;
+                <span id="current-year"></span> &bullet;
+                <a href="https://github.com/isitup/time-to-time">Converter home</a> &bullet;
+                <a href="https://github.com/isitup/calendula">Calendar component</a>
+            </p>
         </footer>
     </div>
 
