@@ -179,6 +179,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Handle select2 events
         $timezoneSelect.on('select2:select', function() {
+            calendula.setConfig({
+                timezone: timezoneSelect.value
+            });
             if (timestampInput.value) {
                 timestampToDatetime(timestampInput.value);
             } else if (datetimeInput.value) {
@@ -305,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Convert timestamp to datetime
     function timestampToDatetime(timestamp) {
         if (!timestamp) return;
-        
+
         try {
             const timestampNum = parseInt(timestamp, 10);
             
@@ -315,17 +318,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const selectedTimezone = timezoneSelect.value;
-            const datetime = dayjs.unix(timestampNum).tz(selectedTimezone);
-            
-            if (!datetime.isValid()) {
-                updateInfoBox('Invalid timestamp value', 'warning');
-                return;
-            }
-            
-            calendula.setDate(datetime.toDate());
+            const datetime = new Date(timestampNum * 1000);
+            calendula.setDate(datetime);
             updateInfoBox(`Converted timestamp ${timestampNum} to datetime in ${selectedTimezone} timezone`, 'success');
         } catch (error) {
-            updateInfoBox(`Error: ${error.message}`, 'danger');
+            updateInfoBox(`Error: ${error.message}`, 'warning');
         }
     }
     
@@ -341,7 +338,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Convert datetime to timestamp (used for programmatic updates, not direct user input)
     function datetimeToTimestamp(datetimeStr) {
-        console.log(datetimeStr);
         if (!datetimeStr) {
             updateInfoBox('Invalid timestamp format', 'warning');
             return;
@@ -401,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             updateInfoBox(`Converted datetime to timestamp ${timestamp} (UTC)`, 'success');
         } catch (error) {
-            updateInfoBox(`Error: ${error.message}`, 'danger');
+            updateInfoBox(`Error: ${error.message}`, 'warning');
         }
     }
     
@@ -418,9 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Flag to track if we're already processing an input event
     let isUpdatingDateTime = false;
 
-    // console.log(datetimeInput);
     $('body #datetime').on('input', function() {
-        console.log(1);
         const newValue = datetimeInput.value;
         if (newValue) {
             calculateTimestampFromDatetime(newValue);
@@ -436,7 +430,6 @@ document.addEventListener('DOMContentLoaded', function() {
     //     if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
     //         const cursorPos = this.selectionStart;
     //         const selectionEnd = this.selectionEnd;
-    //         console.log(cursorPos);
     //
     //         // If there's no selection range and cursor isn't at the end
     //         if (cursorPos === selectionEnd && cursorPos < this.value.length) {
